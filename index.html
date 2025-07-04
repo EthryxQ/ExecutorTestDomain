@@ -1,61 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Roblox Executor (Token-Free)</title>
+  <title>Roblox Executor</title>
   <style>
-    body {
-      background-color: #121212;
-      color: #fff;
-      font-family: sans-serif;
-      padding: 20px;
-    }
-    textarea {
-      width: 100%;
-      height: 200px;
-      background: #222;
-      color: #fff;
-      font-size: 14px;
-      border: 1px solid #555;
-      padding: 10px;
-      border-radius: 5px;
-    }
-    button {
-      margin-top: 10px;
-      padding: 10px 20px;
-      background-color: #66ff99;
-      border: none;
-      font-weight: bold;
-      border-radius: 4px;
-      cursor: pointer;
-    }
+    body { background: #121212; color: #fff; font-family: sans-serif; padding: 20px; }
+    textarea { width: 100%; height: 200px; background: #1f1f1f; color: #fff; padding: 10px; border-radius: 5px; border: none; resize: none; }
+    button { margin-top: 10px; padding: 10px 20px; background: #66ff99; border: none; font-weight: bold; border-radius: 4px; cursor: pointer; }
   </style>
 </head>
 <body>
-  <h2>Roblox Executor Panel (Token-Free)</h2>
-  <textarea id="code" placeholder="Lua kodunu buraya yaz..."></textarea><br>
-  <button onclick="downloadCommand()">Komutu Oluştur</button>
+  <h2>Roblox Executor Panel</h2>
+  <textarea id="code" placeholder="Kodunuzu buraya yazın..."></textarea><br>
+  <button onclick="uploadCode()">Execute</button>
 
   <script>
-    function downloadCommand() {
+    const TOKEN = "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"; // GitHub token (güvenliyse koy)
+    const USERNAME = "EthryxQ";
+    const REPO = "ExecutorTestDomain";
+    const FILE = "command.json";
+
+    async function getSha() {
+      const res = await fetch(`https://api.github.com/repos/${USERNAME}/${REPO}/contents/${FILE}`, {
+        headers: { "Authorization": `token ${TOKEN}` }
+      });
+      const data = await res.json();
+      return data.sha;
+    }
+
+    async function uploadCode() {
       const code = document.getElementById("code").value;
-      if (!code.trim()) {
-        alert("Kod boş!");
-        return;
-      }
+      if (!code.trim()) return alert("Kod boş!");
 
-      const blob = new Blob(
-        [JSON.stringify({ command: code }, null, 2)],
-        { type: "application/json" }
-      );
+      const sha = await getSha();
+      const content = btoa(unescape(encodeURIComponent(JSON.stringify({ command: code }))));
 
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "command.json";
-      a.click();
-      URL.revokeObjectURL(url);
+      const res = await fetch(`https://api.github.com/repos/${USERNAME}/${REPO}/contents/${FILE}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `token ${TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: "command updated",
+          content: content,
+          sha: sha
+        })
+      });
 
-      alert("Komut dosyası indirildi. GitHub'a elle yükle.");
+      const result = await res.json();
+      if (res.ok) alert("Komut yüklendi!");
+      else alert("Hata: " + result.message);
     }
   </script>
 </body>
