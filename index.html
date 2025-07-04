@@ -1,11 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
-  <title>Executor Panel</title>
+  <meta charset="UTF-8">
+  <title>Ethryx Roblox Executor</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #121212;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #00ffc3;
+      text-shadow: 0 0 5px #00ffc3;
+    }
+
+    textarea {
+      width: 90%;
+      max-width: 700px;
+      height: 200px;
+      background-color: #1e1e1e;
+      color: #00ff88;
+      border: none;
+      border-radius: 10px;
+      padding: 15px;
+      font-size: 16px;
+      resize: vertical;
+      box-shadow: 0 0 10px rgba(0, 255, 200, 0.2);
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 24px;
+      font-size: 16px;
+      background-color: #00ffc3;
+      color: #121212;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: bold;
+      box-shadow: 0 4px 15px rgba(0, 255, 200, 0.3);
+    }
+
+    button:hover {
+      background-color: #00cfa6;
+      transform: scale(1.05);
+    }
+
+    @media screen and (max-width: 600px) {
+      textarea {
+        height: 150px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h2>Roblox Executor</h2>
-  <textarea id="code" rows="10" cols="50" placeholder="Kodunu buraya yaz..."></textarea><br><br>
+
+  <h2>Ethryx Roblox Executor</h2>
+
+  <textarea id="code" placeholder="Kodunu buraya yaz..."></textarea>
   <button onclick="uploadCode()">Execute</button>
 
   <script>
@@ -15,9 +76,9 @@
     const FILE = "command.json";
 
     async function getSha() {
-      const res = await fetch(`https://api.github.com/repos/EthryxQ/ExecutorTestDomain/contents/command.json`, {
+      const res = await fetch(`https://api.github.com/repos/${USERNAME}/${REPO}/contents/${FILE}`, {
         headers: {
-          "Authorization": `token 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`
+          "Authorization": `token ${TOKEN}`
         }
       });
       const json = await res.json();
@@ -27,12 +88,12 @@
     async function uploadCode() {
       const code = document.getElementById("code").value;
       const json = { command: code };
-      const sha = await getSha(); // <-- otomatik çek
+      const sha = await getSha();
 
-      fetch(`https://api.github.com/repos/EthryxQ/ExecutorTestDomain/contents/command.json`, {
+      fetch(`https://api.github.com/repos/${USERNAME}/${REPO}/contents/${FILE}`, {
         method: "PUT",
         headers: {
-          "Authorization": `token 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`,
+          "Authorization": `token ${TOKEN}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -43,12 +104,13 @@
       })
       .then(res => res.json())
       .then(data => {
-        alert("Komut yüklendi!");
+        alert("✅ Komut başarıyla yüklendi!");
       })
       .catch(err => {
-        alert("Hata: " + err);
+        alert("❌ Hata oluştu: " + err);
       });
     }
   </script>
+
 </body>
 </html>
