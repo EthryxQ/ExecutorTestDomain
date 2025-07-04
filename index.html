@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Executor Panel</title>
+</head>
+<body>
+  <h2>Roblox Executor</h2>
+  <textarea id="code" rows="10" cols="50" placeholder="Kodunu buraya yaz..."></textarea><br><br>
+  <button onclick="uploadCode()">Execute</button>
+
+  <script>
+    function uploadCode() {
+      const code = document.getElementById("code").value;
+      const json = { command: code };
+
+      fetch("https://api.github.com/repos/EthryxQ/ExecutorTestDomain/contents/command.json", {
+        method: "PUT",
+        headers: {
+          "Authorization": "token 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",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: "Update command",
+          content: btoa(JSON.stringify(json)),
+          sha: "" // İlk push'ta boş bırak, sonra SHA'yı alıp eklersin
+        })
+      }).then(res => res.json()).then(data => {
+        alert("Komut yüklendi!");
+      }).catch(err => {
+        alert("Hata: " + err);
+      });
+    }
+  </script>
+</body>
+</html>
