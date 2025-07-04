@@ -1,61 +1,58 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Roblox Web Executor</title>
+  <title>Roblox Executor</title>
   <style>
     body {
       background-color: #1e1e1e;
-      color: white;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 50px;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 40px;
     }
 
-    h1 {
-      margin-bottom: 20px;
+    h2 {
+      color: #66ff99;
     }
 
     textarea {
-      width: 80%;
+      width: 100%;
       height: 200px;
-      background-color: #2e2e2e;
-      color: white;
+      background-color: #2d2d2d;
+      color: #ffffff;
       border: 1px solid #444;
-      border-radius: 8px;
       padding: 10px;
       font-size: 14px;
-      resize: vertical;
+      border-radius: 5px;
+      resize: none;
     }
 
     button {
-      margin-top: 20px;
+      margin-top: 10px;
       padding: 10px 20px;
-      background-color: #4caf50;
-      color: white;
+      background-color: #66ff99;
+      color: #000;
       border: none;
-      border-radius: 5px;
-      font-size: 16px;
+      border-radius: 4px;
       cursor: pointer;
+      font-weight: bold;
     }
 
     button:hover {
-      background-color: #45a049;
+      background-color: #4ddb82;
     }
   </style>
 </head>
 <body>
-  <h1>Roblox Executor Panel</h1>
-  <textarea id="code" placeholder="Kodunu buraya yaz..."></textarea>
+
+  <h2>Roblox Executor Panel</h2>
+  <textarea id="code" placeholder="Kodunu buraya yaz..."></textarea><br>
   <button onclick="uploadCode()">Execute</button>
 
   <script>
-    const TOKEN = "ghp_DEĞİŞTİR"; // BURAYA kendi GitHub token'ını yaz
-    const USERNAME = "EthryxQ";
-    const REPO = "ExecutorTestDomain";
-    const FILE = "command.json";
+    const TOKEN = "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"; // Buraya GitHub token'ını gir
+    const USERNAME = "EthryxQ"; // GitHub kullanıcı adın
+    const REPO = "ExecutorTestDomain"; // Repo ismi
+    const FILE = "command.json"; // Değiştirilecek dosya
 
     async function getSha() {
       const res = await fetch(`https://api.github.com/repos/${USERNAME}/${REPO}/contents/${FILE}`, {
@@ -63,18 +60,25 @@
           "Authorization": `token ${TOKEN}`
         }
       });
-      if (!res.ok) return null;
-      const json = await res.json();
-      return json.sha;
+      const data = await res.json();
+      return data.sha;
     }
 
     async function uploadCode() {
-      const code = document.getElementById("code").value.trim();
-      if (!code) return alert("Boş kod gönderilemez!");
-
-      const contentObj = { command: code };
-      const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(contentObj))));
+      const code = document.getElementById("code").value;
       const sha = await getSha();
+
+      if (!code.trim()) {
+        alert("Kod boş!");
+        return;
+      }
+
+      const jsonData = { command: code };
+      const content = btoa(unescape(encodeURIComponent(JSON.stringify(jsonData))));
+
+      console.log("Kod:", code);
+      console.log("SHA:", sha);
+      console.log("Base64:", content);
 
       const res = await fetch(`https://api.github.com/repos/${USERNAME}/${REPO}/contents/${FILE}`, {
         method: "PUT",
@@ -83,20 +87,22 @@
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          message: "Komut güncellendi",
-          content: base64,
+          message: "update command",
+          content: content,
           sha: sha
         })
       });
 
+      const result = await res.json();
+
       if (res.ok) {
-        alert("Komut başarıyla yüklendi!");
+        alert("Komut yüklendi!");
       } else {
-        const error = await res.json();
-        alert("HATA: " + (error.message || "Bilinmeyen hata"));
-        console.error(error);
+        alert("Hata: " + result.message);
+        console.error(result);
       }
     }
   </script>
+
 </body>
 </html>
