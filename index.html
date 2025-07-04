@@ -37,33 +37,42 @@
   <button onclick="uploadCode()">Execute</button>
 
   <script>
-    const TOKEN = "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"; // BURAYA CLASSIC TOKEN GELİYOR
+    // 🛡️ Güvenli değil, sadece test için TOKEN buraya!
+    const TOKEN = "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"; // <- kendi tokenını buraya yaz
     const USERNAME = "EthryxQ";
     const REPO = "ExecutorTestDomain";
     const FILE = "command.json";
 
+    // SHA alma (404 olursa dosya yok demektir)
     async function getSha() {
       const res = await fetch(`https://api.github.com/repos/${USERNAME}/${REPO}/contents/${FILE}`, {
         headers: {
           "Authorization": `token ${TOKEN}`
         }
       });
+
+      if (res.status === 404) return null;
+
       const data = await res.json();
-      if (data.sha) return data.sha;
-      else throw new Error("SHA alınamadı");
+      return data.sha || null;
     }
 
     async function uploadCode() {
-      const code = document.getElementById("code").value;
-      if (!code.trim()) return alert("Kod boş!");
+      const code = document.getElementById("code").value.trim();
+      if (!code) return alert("⚠️ Kod boş!");
 
       const sha = await getSha().catch(err => {
-        alert("SHA alınamadı: " + err.message);
+        alert("❌ SHA alınamadı: " + err.message);
       });
 
-      if (!sha) return;
+      const jsonContent = btoa(unescape(encodeURIComponent(JSON.stringify({ command: code }))));
 
-      const content = btoa(unescape(encodeURIComponent(JSON.stringify({ command: code }))));
+      const body = {
+        message: "Komut güncellendi",
+        content: jsonContent
+      };
+
+      if (sha) body.sha = sha;
 
       const res = await fetch(`https://api.github.com/repos/${USERNAME}/${REPO}/contents/${FILE}`, {
         method: "PUT",
@@ -71,14 +80,11 @@
           "Authorization": `token ${TOKEN}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          message: "Komut güncellendi",
-          content: content,
-          sha: sha
-        })
+        body: JSON.stringify(body)
       });
 
       const result = await res.json();
+
       if (res.ok) {
         alert("✅ Komut yüklendi!");
         console.log("GitHub cevabı:", result);
