@@ -37,38 +37,38 @@
   <button onclick="uploadCode()">Execute</button>
 
   <script>
-    // 🛡️ Güvenli değil, sadece test için TOKEN buraya!
-    const TOKEN = "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"; // <- kendi tokenını buraya yaz
+    const TOKEN = "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"; // Classic Token
     const USERNAME = "EthryxQ";
     const REPO = "ExecutorTestDomain";
     const FILE = "command.json";
 
-    // SHA alma (404 olursa dosya yok demektir)
     async function getSha() {
-      const res = await fetch(`https://api.github.com/repos/${USERNAME}/${REPO}/contents/${FILE}`, {
-        headers: {
-          "Authorization": `token ${TOKEN}`
-        }
-      });
+      try {
+        const res = await fetch(`https://api.github.com/repos/${USERNAME}/${REPO}/contents/${FILE}`, {
+          headers: {
+            "Authorization": `token ${TOKEN}`
+          }
+        });
 
-      if (res.status === 404) return null;
+        if (res.status === 404) return null;
 
-      const data = await res.json();
-      return data.sha || null;
+        const data = await res.json();
+        return data.sha || null;
+      } catch (e) {
+        return null;
+      }
     }
 
     async function uploadCode() {
       const code = document.getElementById("code").value.trim();
       if (!code) return alert("⚠️ Kod boş!");
 
-      const sha = await getSha().catch(err => {
-        alert("❌ SHA alınamadı: " + err.message);
-      });
+      const sha = await getSha();
 
       const jsonContent = btoa(unescape(encodeURIComponent(JSON.stringify({ command: code }))));
 
       const body = {
-        message: "Komut güncellendi",
+        message: "Komut yüklendi",
         content: jsonContent
       };
 
@@ -87,7 +87,7 @@
 
       if (res.ok) {
         alert("✅ Komut yüklendi!");
-        console.log("GitHub cevabı:", result);
+        console.log("Yanıt:", result);
       } else {
         alert("❌ Hata: " + result.message);
         console.error(result);
