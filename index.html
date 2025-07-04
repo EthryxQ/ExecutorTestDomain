@@ -9,24 +9,43 @@
   <button onclick="uploadCode()">Execute</button>
 
   <script>
-    function uploadCode() {
+    const TOKEN = "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";
+    const USERNAME = "EthryxQ";
+    const REPO = "ExecutorTestDomain";
+    const FILE = "command.json";
+
+    async function getSha() {
+      const res = await fetch(`https://api.github.com/repos/EthryxQ/ExecutorTestDomain/contents/command.json`, {
+        headers: {
+          "Authorization": `token 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`
+        }
+      });
+      const json = await res.json();
+      return json.sha;
+    }
+
+    async function uploadCode() {
       const code = document.getElementById("code").value;
       const json = { command: code };
+      const sha = await getSha(); // <-- otomatik çek
 
-      fetch("https://api.github.com/repos/EthryxQ/ExecutorTestDomain/contents/command.json", {
+      fetch(`https://api.github.com/repos/EthryxQ/ExecutorTestDomain/contents/command.json`, {
         method: "PUT",
         headers: {
-          "Authorization": "token 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",
+          "Authorization": `token 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`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
           message: "Update command",
           content: btoa(JSON.stringify(json)),
-          sha: "" // İlk push'ta boş bırak, sonra SHA'yı alıp eklersin
+          sha: sha
         })
-      }).then(res => res.json()).then(data => {
+      })
+      .then(res => res.json())
+      .then(data => {
         alert("Komut yüklendi!");
-      }).catch(err => {
+      })
+      .catch(err => {
         alert("Hata: " + err);
       });
     }
